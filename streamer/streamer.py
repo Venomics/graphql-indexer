@@ -5,7 +5,7 @@ First part of the indexer - streamer. It listens for
 new blocks in the Venom blockchain and puts the data into Kafka
 """
 
-import loguru
+from loguru import logger
 import requests
 import time
 import os
@@ -20,6 +20,7 @@ from kafka import KafkaProducer
 async def listener():
     transactions_topic = os.environ.get('KAFKA_TOPIC_TRANSACTIONS', 'venom_transactions')
     producer = KafkaProducer(bootstrap_servers=os.environ.get('KAFKA_BROKER', 'kafka:9092'))
+    logger.info(f"Running streamer, sending data to {transactions_topic}")
     transport = WebsocketsTransport(
         url='wss://gql-testnet.venom.foundation/graphql',
         subprotocols=[WebsocketsTransport.APOLLO_SUBPROTOCOL]
@@ -83,7 +84,7 @@ async def listener():
         """ % str(now)) 
         async for result in session.subscribe(subscription):
             lag = int(time.time() - result['transactions']['now'])
-            print(f"[{lag}] {result}")
+            logger.info(f"[{lag}] {result}")
             producer.send(transactions_topic, json.dumps(result).encode("utf-8"))
         producer.flush()
             

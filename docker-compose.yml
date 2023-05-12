@@ -2,8 +2,8 @@ services:
   streamer:
     build:
       context: streamer
-    depends_on:
-      - kafka
+    # depends_on:
+    #   - kafka
     restart: always
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
