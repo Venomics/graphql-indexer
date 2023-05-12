@@ -84,6 +84,7 @@ async def listener():
             block {
                 seq_no
                 id
+                shard
             }
         }
     }
