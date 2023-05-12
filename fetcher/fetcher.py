@@ -41,7 +41,11 @@ def listener():
         group_id=os.environ.get('KAFKA_GROUP_ID', 'indexer'),
         auto_offset_reset='latest'
     )
-    transport = RequestsHTTPTransport(url="https://gql-testnet.venom.foundation/graphql")
+    transport = RequestsHTTPTransport(
+        url="https://gql-testnet.venom.foundation/graphql",
+        timeout=3,
+        retries=10
+        )
     logger.info("Starting consumer")
     conn = psycopg2.connect()
     with Client(transport=transport, fetch_schema_from_transport=True) as session:
