@@ -40,7 +40,6 @@ async def listener():
             out_messages {
                 created_at
                 created_lt
-                body
                 dst
                 src
                 dst_transaction {
@@ -61,7 +60,6 @@ async def listener():
             in_message {
                 created_at
                 created_lt
-                body
                 dst
                 src
                 dst_transaction {
