@@ -56,7 +56,8 @@ def listener():
             if msg['msg_type_name'] == "ExtOut":
                 producer.send(messages_decode_topic, json.dumps({
                     'id': msg['id'],
-                    'msg_type_name': msg['msg_type_name']
+                    'msg_type_name': msg['msg_type_name'],
+                    'created_at': msg['created_at']
                 }).encode("utf-8"))
             conn.commit()
         
