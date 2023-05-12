@@ -12,6 +12,15 @@ services:
     deploy:
       mode: replicated
       replicas: ${MESSAGE_INDEXER:-2}
+  event_decoder:
+    build:
+      context: event_decoder
+    restart: always
+    env_file:
+      - db_config.env
+    deploy:
+      mode: replicated
+      replicas: ${EVENT_DECODER:-2}
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
