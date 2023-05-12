@@ -81,6 +81,10 @@ async def listener():
             now
             total_fees
             tr_type_name
+            block {
+                seq_no
+                id
+            }
         }
     }
         """ % str(now)) 
