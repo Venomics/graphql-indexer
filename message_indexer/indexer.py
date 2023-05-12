@@ -15,7 +15,6 @@ import asyncio
 import psycopg2
 from kafka import KafkaProducer, KafkaConsumer
 
-
 def safe_id(o):
     if o is None:
         return None
