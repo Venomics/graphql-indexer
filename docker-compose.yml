@@ -2,9 +2,14 @@ services:
   streamer:
     build:
       context: streamer
-    # depends_on:
-    #   - kafka
     restart: always
+  fetcher:
+    build:
+      context: fetcher
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: ${FETCHER_INSTANCES:-2}
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:

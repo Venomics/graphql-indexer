@@ -2,7 +2,9 @@
 
 """
 First part of the indexer - streamer. It listens for 
-new blocks in the Venom blockchain and puts the data into Kafka
+new blocks in the Venom blockchain and puts the blocks ids into Kafka.
+Due to performance issues on the GraphQL API side it is impossible to 
+fetch all data during streaming, so it is handled by fetcher.
 """
 
 from loguru import logger
@@ -32,59 +34,7 @@ async def listener():
     subscription {
         transactions (filter: {now: {gt: %s}}) {
             id
-            account_addr
-            aborted
-            balance_delta
-            lt
-            workchain_id
-            out_messages {
-                created_at
-                created_lt
-                dst
-                src
-                dst_transaction {
-                    id
-                }
-                src_transaction {
-                    id
-                }
-                fwd_fee
-                ihr_fee
-                import_fee
-                bounce
-                bounced
-                value
-                status_name
-                msg_type_name
-            }
-            in_message {
-                created_at
-                created_lt
-                dst
-                src
-                dst_transaction {
-                    id
-                }
-                src_transaction {
-                    id
-                }
-                fwd_fee
-                ihr_fee
-                import_fee
-                bounce
-                bounced
-                value
-                status_name
-                msg_type_name
-            }
             now
-            total_fees
-            tr_type_name
-            block {
-                seq_no
-                id
-                shard
-            }
         }
     }
         """ % str(now)) 
