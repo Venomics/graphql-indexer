@@ -32,6 +32,7 @@ async def listener():
     subscription {
         transactions (filter: {now: {gt: %s}}) {
             id
+            account_addr
             aborted
             balance_delta
             lt
