@@ -13,6 +13,8 @@ import json
 import asyncio
 import psycopg2
 from kafka import KafkaConsumer
+from gql import Client, gql
+from gql.transport.requests import RequestsHTTPTransport
 
 
 def listener():
@@ -52,6 +54,67 @@ def listener():
         on conflict do nothing
         """, (msg_id, function_id, obj['created_at'], name, json.dumps(event)))
             logger.info(f"Insert event {msg_id}, result: {cursor.rowcount}")
+            if name == "Exchange":
+                info = event['tokens']
+                src_token = info['spentTokenRoot']
+                dst_token = info['receiveTokenRoot']
+                fees = info['fees']
+                assert len(fees) == 1, fees
+                fees = fees[0]
+                cursor.execute("""
+                        insert into exchange_event(id, created_at, sender, recipient, src_token, src_amount,
+                        dst_token, dst_amount, pool_fee, beneficiary_fee, beneficiary, inserted_at)
+                        values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+                        on conflict do nothing
+                        """, (msg_id, obj['created_at'], info['sender'], info['recipient'],
+                        src_token, info['spentAmount'], dst_token, info['receiveAmount'],
+                        fees['pool_fee'], fees['beneficiary_fee'], fees['beneficiary']
+                        ))
+                logger.info(f"Insert exchange event {msg_id}, result: {cursor.rowcount}")
+
+                def update_token(token):
+                    cursor.execute("select updated_at from tokens_info where id = %s", (token, ))
+                    updated_at = cursor.fetchone()
+                    if updated_at is None:
+                        transport = RequestsHTTPTransport(url='https://gql-testnet.venom.foundation/graphql')
+                        with Client(transport=transport, fetch_schema_from_transport=True) as session:
+                            token = session.execute(gql("""
+                            query {
+                                ft {
+                                    token(address: "%s") {
+                                    address
+                                    standard
+                                    symbol
+                                    name
+                                    decimals
+                                    updateTime
+                                    createdAt
+                                    lastTransferTimestamp
+                                    rootOwner
+                                    totalSupply
+                                    }
+                                }
+                                }
+
+                            """ % token))
+                            logger.info(f"Got token info: {token}")
+                            token = token['ft']['token']
+                            cursor.execute("""
+                                    insert into tokens_info(id, standard, symbol, name, decimals,
+                                    created_at, root_owner, total_supply, updated_at)
+                                    values (%s, %s, %s, %s, %s, %s, %s, %s, now())
+                                    on conflict do nothing
+                                    """, (token['address'], token['standard'], token['symbol'],
+                                    token['name'], token['decimals'], token['createdAt'],
+                                    token['rootOwner'], token['totalSupply']
+                                    ))
+                            logger.info(f"Insert token info {token}, result: {cursor.rowcount}")
+
+                    else:
+                        logger.info(f"Token already known: {updated_at}")
+                update_token(src_token)
+                update_token(dst_token)
+                
             conn.commit()
         
 
