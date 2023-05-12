@@ -29,7 +29,8 @@ async def listener():
         now = int(time.time())
 
         subscription = gql("""
-        subscription { transactions (filter: {now: {gt: %s}}) {
+    subscription {
+        transactions (filter: {now: {gt: %s}}) {
             id
             aborted
             balance_delta
@@ -79,8 +80,9 @@ async def listener():
             }
             now
             total_fees
+            tr_type_name
         }
-        }
+    }
         """ % str(now)) 
         async for result in session.subscribe(subscription):
             lag = int(time.time() - result['transactions']['now'])
