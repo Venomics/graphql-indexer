@@ -41,3 +41,16 @@ CREATE TABLE public.exchange_event (
 	inserted_at timestamp NULL,
 	CONSTRAINT exchange_event_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE public.tokens_info (
+	id varchar NOT NULL,
+	standard varchar NULL,
+	symbol varchar NULL,
+	"name" varchar NULL,
+	decimals int8 NULL,
+	created_at int8 NULL,
+	root_owner varchar NULL,
+	total_supply numeric(40) NULL,
+	updated_at timestamp NULL,
+	CONSTRAINT tokens_info_pkey PRIMARY KEY (id)
+);
