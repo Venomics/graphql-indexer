@@ -35,25 +35,49 @@ async def listener():
             lt
             workchain_id
             out_messages {
-            code_hash
-            created_at
-            created_lt
-            body
-            dst
-            src
-            dst_transaction {
-                id
+                created_at
+                created_lt
+                body
+                dst
+                src
+                dst_transaction {
+                    id
+                }
+                src_transaction {
+                    id
+                }
+                fwd_fee
+                ihr_fee
+                import_fee
+                bounce
+                bounced
+                value
+                status_name
+                msg_type_name
             }
-            fwd_fee
-            ihr_fee
-            import_fee
-            bounce
-            bounced
-            value
-            status_name
-            msg_type_name
+            in_message {
+                created_at
+                created_lt
+                body
+                dst
+                src
+                dst_transaction {
+                    id
+                }
+                src_transaction {
+                    id
+                }
+                fwd_fee
+                ihr_fee
+                import_fee
+                bounce
+                bounced
+                value
+                status_name
+                msg_type_name
             }
             now
+            total_fees
         }
         }
         """ % str(now)) 
