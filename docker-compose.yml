@@ -3,15 +3,15 @@ services:
     build:
       context: streamer
     restart: always
-  fetcher:
+  message_indexer:
     build:
-      context: fetcher
+      context: message_indexer
     restart: always
     env_file:
       - db_config.env
     deploy:
       mode: replicated
-      replicas: ${FETCHER_INSTANCES:-2}
+      replicas: ${MESSAGE_INDEXER:-2}
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
