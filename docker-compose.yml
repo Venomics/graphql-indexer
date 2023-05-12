@@ -7,6 +7,8 @@ services:
     build:
       context: fetcher
     restart: always
+    env_file:
+      - db_config.env
     deploy:
       mode: replicated
       replicas: ${FETCHER_INSTANCES:-2}
