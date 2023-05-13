@@ -35,7 +35,7 @@ CREATE TABLE public.exchange_event (
 	src_amount numeric(40) NULL,
 	dst_token varchar NULL,
 	dst_amount numeric(40) NULL,
-	pool_fee int8 NULL,
+	pool_fee numeric(40) NULL,
 	beneficiary_fee numeric(40) NULL,
 	beneficiary varchar NULL,
 	inserted_at timestamp NULL,
