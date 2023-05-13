@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS top_tokens_datamart (
 def venom_top_token_datamart():
       add_current_top_jettons = PostgresOperator(
         task_id="add_current_top_jettons",
-        postgres_conn_id="ton_db",
+        postgres_conn_id="venom_db",
         sql=[
             """
             insert into top_tokens_datamart(build_time, address, 
