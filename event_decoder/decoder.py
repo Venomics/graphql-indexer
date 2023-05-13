@@ -99,6 +99,9 @@ def listener():
                             """ % token))
                             logger.info(f"Got token info: {token}")
                             token = token['ft']['token']
+                            if token is None:
+                                logger.error("No data for token!")
+                                return
                             cursor.execute("""
                                     insert into tokens_info(id, standard, symbol, name, decimals,
                                     created_at, root_owner, total_supply, updated_at)
