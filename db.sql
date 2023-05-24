@@ -42,6 +42,18 @@ CREATE TABLE public.exchange_event (
 	CONSTRAINT exchange_event_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE public.sync_event (
+	id varchar NOT NULL,
+	created_at int8 NULL,
+	sender varchar NULL,
+	recipient varchar NULL,
+	reserve0 numeric(40) NULL,
+	reserve1 numeric(40) NULL,
+	lp_supply numeric(40) NULL,
+	inserted_at timestamp NULL,
+	CONSTRAINT sync_event_pkey PRIMARY KEY (id)
+);
+
 CREATE TABLE public.tokens_info (
 	id varchar NOT NULL,
 	standard varchar NULL,
