@@ -12,10 +12,16 @@ services:
     deploy:
       mode: replicated
       replicas: ${MESSAGE_INDEXER:-2}
+  executor:
+    build:
+      context: executor
+    restart: always
   event_decoder:
     build:
       context: event_decoder
     restart: always
+    depends_on:
+      - executor
     env_file:
       - db_config.env
     deploy:

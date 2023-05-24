@@ -71,18 +71,6 @@ def listener():
                         fees['pool_fee'], fees['beneficiary_fee'], fees['beneficiary']
                         ))
                 logger.info(f"Insert exchange event {msg_id}, result: {cursor.rowcount}")
-            elif name == "Sync":
-                info = event['tokens']
-                reserves = info['reserves']
-                lp_supply = info['lp_supply']
-                cursor.execute("""
-                        insert into sync_event(id, created_at, reserve0, reserve1, lp_supply, inserted_at)
-                        values (%s, %s, %s, %s, %s, now())
-                        on conflict do nothing
-                        """, (msg_id, obj['created_at'], int(reserves[0]), int(reserves[1]), int(lp_supply)
-                        ))
-                logger.info(f"Insert sync event {msg_id}, result: {cursor.rowcount}")
-
                 def update_token(token):
                     cursor.execute("select updated_at from tokens_info where id = %s", (token, ))
                     updated_at = cursor.fetchone()
@@ -128,6 +116,39 @@ def listener():
                         logger.info(f"Token already known: {updated_at}")
                 update_token(src_token)
                 update_token(dst_token)
+            elif name == "Sync":
+                info = event['tokens']
+                reserves = info['reserves']
+                lp_supply = info['lp_supply']
+                cursor.execute("""
+                        insert into sync_event(id, created_at, reserve0, reserve1, lp_supply, inserted_at)
+                        values (%s, %s, %s, %s, %s, now())
+                        on conflict do nothing
+                        """, (msg_id, obj['created_at'], int(reserves[0]), int(reserves[1]), int(lp_supply)
+                        ))
+                logger.info(f"Insert sync event {msg_id}, result: {cursor.rowcount}")
+
+                cursor.execute("select src from messages where id = %s", (msg_id,))
+                dexpair = cursor.fetchone()[0]
+                cursor.execute("select * from dex_pair where id = %s", (dexpair, ))
+                existing = cursor.fetchone()
+                if existing:
+                    logger.info(f"Dex pair {dexpair} already exists")
+                else:
+                    abi = requests.get(f"https://testnetverify.venomscan.com/abi/address/{dexpair}").json()
+                    response = requests.post(os.environ.get('EXECUTOR_URL', "http://executor:9090/execute"),
+                        json = {
+                            "method": "getTokenRoots",
+                            "address": dexpair,
+                            "abi": abi
+                        }
+                    ).json()['output']
+                    cursor.execute("""
+                        insert into dex_pair(id, token0, token1, lp, inserted_at)
+                        values (%s, %s, %s, %s, now())
+                        on conflict do nothing
+                        """, (dexpair, response[0], response[1], response[2]))
+                    logger.info(f"Insert dexpair {dexpair}, result: {cursor.rowcount}")
                 
             conn.commit()
         
