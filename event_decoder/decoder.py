@@ -76,12 +76,10 @@ def listener():
                 reserves = info['reserves']
                 lp_supply = info['lp_supply']
                 cursor.execute("""
-                        insert into sync_event(id, created_at, sender, recipient,
-                        reserve0, reserve1, lp_supply, inserted_at)
-                        values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+                        insert into sync_event(id, created_at, reserve0, reserve1, lp_supply, inserted_at)
+                        values (%s, %s, %s, %s, %s, now())
                         on conflict do nothing
-                        """, (msg_id, obj['created_at'], info['sender'], info['recipient'],
-                        int(reserves[0]), int(reserves[1]), int(lp_supply)
+                        """, (msg_id, obj['created_at'], int(reserves[0]), int(reserves[1]), int(lp_supply)
                         ))
                 logger.info(f"Insert sync event {msg_id}, result: {cursor.rowcount}")
 

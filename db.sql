@@ -45,8 +45,6 @@ CREATE TABLE public.exchange_event (
 CREATE TABLE public.sync_event (
 	id varchar NOT NULL,
 	created_at int8 NULL,
-	sender varchar NULL,
-	recipient varchar NULL,
 	reserve0 numeric(40) NULL,
 	reserve1 numeric(40) NULL,
 	lp_supply numeric(40) NULL,
