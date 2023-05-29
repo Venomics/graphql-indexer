@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
     max_active_runs=1,
     tags=['venom', 'tokens', 'tvl', 'datamart']
 )
-def tvl_datamart():
+def venom_tvl_datamart():
       tvl_history_entry = PostgresOperator(
         task_id="tvl_history_entry",
         postgres_conn_id="venom_db",
@@ -32,4 +32,4 @@ def tvl_datamart():
     )
 
 
-tvl_datamart_dag = tvl_datamart()
+venom_tvl_datamart_dag = venom_tvl_datamart()
