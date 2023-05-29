@@ -134,6 +134,9 @@ def listener():
                 existing = cursor.fetchone()
                 if existing:
                     logger.info(f"Dex pair {dexpair} already exists")
+                    cursor.execute("""
+                        update dex_pair set sync_id = %s where id = %s
+                        """, (msg_id, dexpair))
                 else:
                     abi = requests.get(f"https://testnetverify.venomscan.com/abi/address/{dexpair}").json()
                     response = requests.post(os.environ.get('EXECUTOR_URL', "http://executor:9090/execute"),
@@ -144,10 +147,10 @@ def listener():
                         }
                     ).json()['output']
                     cursor.execute("""
-                        insert into dex_pair(id, token0, token1, lp, inserted_at)
-                        values (%s, %s, %s, %s, now())
+                        insert into dex_pair(id, token0, token1, lp, sync_id, inserted_at)
+                        values (%s, %s, %s, %s, %s, now())
                         on conflict do nothing
-                        """, (dexpair, response[0], response[1], response[2]))
+                        """, (dexpair, response[0], response[1], response[2], msg_id))
                     logger.info(f"Insert dexpair {dexpair}, result: {cursor.rowcount}")
                 
             conn.commit()

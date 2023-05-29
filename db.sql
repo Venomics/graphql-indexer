@@ -64,3 +64,13 @@ CREATE TABLE public.tokens_info (
 	updated_at timestamp NULL,
 	CONSTRAINT tokens_info_pkey PRIMARY KEY (id)
 );
+
+CREATE TABLE public.dex_pair (
+	id varchar NOT NULL,
+	token0 varchar NULL,
+	token1 varchar NULL,
+	lp varchar NULL,
+	inserted_at timestamp NULL,
+	sync_id varchar NULL,
+	CONSTRAINT dex_pair_pkey PRIMARY KEY (id)
+);
