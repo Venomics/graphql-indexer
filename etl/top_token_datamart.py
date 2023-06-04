@@ -44,7 +44,7 @@ select
 ), prices as (
   select token, sum(amount_native) / sum(amount_token) as price_raw  from last_trades_ranks
   where rank < 4 -- last 3 trades
-  group by 1
+  group by 1 having sum(amount_token) > 0
 ), significant_prices as (
   select token, price_raw from prices
   join market_volume_direct using(token) 
@@ -121,6 +121,7 @@ def venom_top_token_datamart():
             select token, sum(amount_native) / sum(amount_token) as price_raw  from last_trades_ranks
             where rank < 4 -- last 3 trades
             group by 1
+            having sum(amount_token) > 0
             ), datamart as (
             select mv.*, ti.symbol, case
                 when coalesce(ti.decimals, 9) = 9 then price_raw
