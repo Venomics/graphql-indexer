@@ -19,8 +19,8 @@ from gql.transport.requests import RequestsHTTPTransport
 
 def listener():
     messages_decode_topic = os.environ.get('KAFKA_TOPIC_MESSAGES_DECODE_QUEUE', 'venom_messages_decode_queue')
-    
-    consumer = KafkaConsumer(messages_decode_topic, 
+
+    consumer = KafkaConsumer(messages_decode_topic,
         bootstrap_servers=os.environ.get('KAFKA_BROKER', 'kafka:9092'),
         group_id=os.environ.get('KAFKA_GROUP_ID', 'event_decoder'),
         auto_offset_reset='latest'
@@ -31,11 +31,14 @@ def listener():
         obj = json.loads(msg.value.decode("utf-8"))
         msg_id = obj['id']
         logger.info(f"Got new message: {msg_id}")
-        res = requests.get(f"https://testnetverify.venomscan.com/parse/message/{msg_id}")
+        res = requests.get(f"https://testnetverify.venomscan.com/parse/message/{msg_id}", headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'})
         if res.status_code == 204:
             logger.info(f"No content for {msg_id}")
             continue
         event = res.json()
+        if 'parsed_type' not in event:
+            logger.error(f"Cant get parsed_type: {event}")
+            continue
         if event['parsed_type'] != 'Event':
             logger.error(f"Unsuppoerted parsed_type: {event['parsed_type']}")
             continue
@@ -139,22 +142,25 @@ def listener():
                         """, (msg_id, dexpair))
                 else:
                     abi = requests.get(f"https://testnetverify.venomscan.com/abi/address/{dexpair}").json()
-                    response = requests.post(os.environ.get('EXECUTOR_URL', "http://executor:9090/execute"),
-                        json = {
-                            "method": "getTokenRoots",
-                            "address": dexpair,
-                            "abi": abi
-                        }
-                    ).json()['output']
-                    cursor.execute("""
-                        insert into dex_pair(id, token0, token1, lp, sync_id, inserted_at)
-                        values (%s, %s, %s, %s, %s, now())
-                        on conflict do nothing
-                        """, (dexpair, response[0], response[1], response[2], msg_id))
-                    logger.info(f"Insert dexpair {dexpair}, result: {cursor.rowcount}")
-                
+                    try:
+                        response = requests.post(os.environ.get('EXECUTOR_URL', "http://executor:9090/execute"),
+                            json = {
+                                "method": "getTokenRoots",
+                                "address": dexpair,
+                                "abi": abi
+                            }
+                        ).json()['output']
+                        cursor.execute("""
+                            insert into dex_pair(id, token0, token1, lp, sync_id, inserted_at)
+                            values (%s, %s, %s, %s, %s, now())
+                            on conflict do nothing
+                            """, (dexpair, response[0], response[1], response[2], msg_id))
+                        logger.info(f"Insert dexpair {dexpair}, result: {cursor.rowcount}")
+                    except Exception as e:
+                        logger.error(f"Unable to parse: {e}")
+
             conn.commit()
-        
+
 
 if __name__ == "__main__":
     listener()
